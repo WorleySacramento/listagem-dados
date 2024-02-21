@@ -69,7 +69,7 @@ export function App() {
   if (isLoading) {
     return null
   }
-
+  // const uniqueKey = `${tag.id}-${tag.title}-${index}`;
 
   return (
     <div className=' px-3 py-10 space-y-8'>
@@ -110,9 +110,9 @@ export function App() {
           <TableBody>
             {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
             {/* @ts-expect-error */}
-            {tagsResponse?.map((tag) => {
+            {tagsResponse?.map((tag, index) => {
               return (
-                <TableRow key={tag.id}>
+                <TableRow key={index}>
                   <TableCell></TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-0.5">
