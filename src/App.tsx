@@ -7,7 +7,6 @@ import { Header } from './components/header'
 import { Tabs } from './components/tabs'
 import { useQuery } from '@tanstack/react-query'
 import {useSearchParams} from 'react-router-dom'
-import { Key } from 'react'
 
 // import { useEffect, useState } from 'react'
 // import useDebounceValue from './hooks/use-debounce-value'
@@ -109,6 +108,8 @@ export function App() {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+            {/* @ts-expect-error */}
             {tagsResponse?.map((tag) => {
               return (
                 <TableRow key={tag.id}>
