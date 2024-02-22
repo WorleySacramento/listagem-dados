@@ -1,4 +1,4 @@
-import { FileDown, Filter, MoreHorizontal, Plus, Search } from 'lucide-react'
+import { FileDown, MoreHorizontal, Plus, Search } from 'lucide-react'
 import { Button } from './components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './components/ui/table'
 import { Control, Input } from './components/ui/input'
@@ -7,8 +7,10 @@ import { Header } from './components/header'
 import { Tabs } from './components/tabs'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import useDebounceValue from './hooks/use-debounce-value'
+import * as Dialog from '@radix-ui/react-dialog'
+import TagForm from './components/tagForm'
 
 // import { useEffect, useState } from 'react'
 // import useDebounceValue from './hooks/use-debounce-value'
@@ -40,13 +42,6 @@ export function App() {
 
   const debouncedFilter = useDebounceValue(filter, 1000)
 
-  // useEffect(() =>{
-  //   setSearchParams( params => {
-  //     params.set('page','1')
-
-  //     return params
-  //   })
-  // },[debouncedFilter, setSearchParams])
 
   const { data: tagsResponse, isLoading } = useQuery<TagResponse>({
     queryKey: ['get-tags', urlFilter, page, debouncedFilter],
@@ -85,10 +80,29 @@ export function App() {
       <main className='max-w-6xl mx-auto space-y-5'>
         <div className='flex items-center gap-3.5'>
           <h1 className=' text-xl font-bold'>Tags</h1>
+          <Dialog.Root>
+            <Dialog.Trigger asChild>
           <Button variant='primary' className=" inline-flex items-center gap-1.5 text-xs bg-teal-300 text-teal-950 font-medium rounded-full px-1.5 py-1">
             <Plus className=' size-3' />
             Criar Novo
           </Button>
+          </Dialog.Trigger>
+          <Dialog.Portal >
+      <Dialog.Overlay className=" fixed inset-0 bg-black/70" />
+      <Dialog.Content className=" fixed right-0 top-0 bottom-0 p-10 space-y-10
+       h-screen min-w-[300px] bg-zinc-900 border-l border-zinc-500">
+        <div className='space-y-3'>
+        <Dialog.Title className=" text-xl font-bold">Criar Tag</Dialog.Title>
+        <Dialog.Description className=" text-sm text-zinc-500">
+          Make changes to your profile here. Click save when you're done.
+        </Dialog.Description>
+        </div>
+
+        <TagForm/>
+
+      </Dialog.Content>
+    </Dialog.Portal>
+          </Dialog.Root>
         </div>
 
         <div className="flex items-center justify-between">
@@ -145,7 +159,6 @@ export function App() {
 
         </Table>
         {tagsResponse && <Pagination items={tagsResponse.items} page={page} pages={tagsResponse.pages} />}
-
       </main>
     </div>
   )
