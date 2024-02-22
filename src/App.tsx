@@ -1,12 +1,14 @@
-import { FileDown, MoreHorizontal, Plus, Search } from 'lucide-react'
+import { FileDown, Filter, MoreHorizontal, Plus, Search } from 'lucide-react'
 import { Button } from './components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './components/ui/table'
 import { Control, Input } from './components/ui/input'
 import { Pagination } from './components/pagination'
 import { Header } from './components/header'
 import { Tabs } from './components/tabs'
-import { useQuery } from '@tanstack/react-query'
-import {useSearchParams} from 'react-router-dom'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import useDebounceValue from './hooks/use-debounce-value'
 
 // import { useEffect, useState } from 'react'
 // import useDebounceValue from './hooks/use-debounce-value'
@@ -30,41 +32,46 @@ export interface Tag {
 }
 
 export function App() {
-  // const [searchParams] = useSearchParams();
-  // const page = searchParams.get('page') ? Number(searchParams.get('page')) : 1;
-
-  // const { data: tagsResponse, isLoading } = useQuery<TagResponse>({
-  //   queryKey: ['get-tags'],
-  //   queryFn: async () => {
-  //     const response = await fetch('http://localhost:3333/tags?_page=1&_limit=5')
-  //     const data = await response.json()
-
-  //     console.log(data)
-  //     return data
-  //   },
-  // })
-
-  // if (isLoading) {
-  //   return null
-  // }
-
-  const [searchParams,] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const urlFilter = searchParams.get('filter') ?? ''
+  const [filter, setFilter] = useState(urlFilter)
   const page = searchParams.get('page') ? Number(searchParams.get('page')) : 1
+
+
+  const debouncedFilter = useDebounceValue(filter, 1000)
+
+  // useEffect(() =>{
+  //   setSearchParams( params => {
+  //     params.set('page','1')
+
+  //     return params
+  //   })
+  // },[debouncedFilter, setSearchParams])
+
   const { data: tagsResponse, isLoading } = useQuery<TagResponse>({
-    queryKey: ['get-tags', urlFilter, page],
+    queryKey: ['get-tags', urlFilter, page, debouncedFilter],
     queryFn: async () => {
-      const response = await fetch(`http://localhost:3333/tags?_page=${page}&_limit=5`)
+      const response = await fetch(`http://localhost:3333/tags?_page=${page}&_limit=5&title_like=${urlFilter}`)
       const data = await response.json()
 
       // delay ms
-      await new Promise(resolve => setTimeout(resolve, 300))
+      await new Promise(resolve => setTimeout(resolve, 2000))
 
       return data
     },
+    placeholderData: keepPreviousData,
 
   })
-  console.log(tagsResponse)
+  // console.log(tagsResponse)
+
+  function handleFiltered() {
+    setSearchParams(params => {
+      params.set('page', '1')
+      params.set('filter', filter)
+
+      return params
+    })
+  }
 
   if (isLoading) {
     return null
@@ -85,12 +92,15 @@ export function App() {
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex">
+          <div className="flex items-center">
             <Input variant='filter'>
-
               <Search className=' size-35' />
-              <Control placeholder='Pesquise' />
+              <Control placeholder='Pesquise' onChange={e => setFilter(e.target.value)} value={filter} />
             </Input>
+            <Button variant='default' type='submit' onClick={handleFiltered}>
+              {/* <Filter className='size-4' /> */}
+              Pesquisar
+            </Button>
           </div>
           <div className="flex">
             <Button variant='default' >
@@ -121,7 +131,7 @@ export function App() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {tag.amountVideos}
+                    {tag.amountVideos} Vídeo(s)
                   </TableCell>
                   <TableCell className=' text-right'>
                     <Button size='icon'>
